@@ -1,0 +1,16 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: capstone-alert-rules
+  namespace: devops-capstone
+spec:
+  groups:
+  - name: CapstoneAlerts
+    rules:
+    - alert: BackendLatencyHigh
+      expr: histogram_quantile(0.99, sum(rate(http_request_duration_seconds_bucket[5m])) by (le)) > 1.0
+      for: 2m
+      labels:
+        severity: warning
+      annotations:
+        summary: "High P99 Latency on Backend Service"

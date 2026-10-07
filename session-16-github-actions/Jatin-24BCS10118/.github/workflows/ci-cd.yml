@@ -1,0 +1,72 @@
+name: Production CI/CD Pipeline
+
+on:
+  push:
+    branches: [ "main", "develop" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  # ==========================================
+  # Job 1: Continuous Integration (Test & Lint)
+  # ==========================================
+  continuous-integration:
+    name: Build & Automated Testing (CI)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js Environment (v18.x)
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Run Static Code Linter
+        run: npm run lint
+
+      - name: Run Unit & Integration Tests
+        run: npm test
+
+      - name: Archive Test Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: coverage/
+          if-no-files-found: ignore
+
+  # ==========================================
+  # Job 2: Continuous Delivery (Build & Deploy)
+  # ==========================================
+  continuous-delivery:
+    name: Container Build & Deploy Simulation (CD)
+    needs: continuous-integration
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - name: Checkout Code Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Docker Hub (Simulated with Secrets)
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME || 'jatin24bcs10118' }}
+          password: ${{ secrets.DOCKERHUB_TOKEN || 'dummy-token-placeholder' }}
+        continue-on-error: true
+
+      - name: Build Docker Image
+        run: |
+          docker build -t cicd-demo-app:${{ github.sha }} .
+          echo "Docker image built successfully with SHA: ${{ github.sha }}"
+
+      - name: Deploy to Kubernetes Staging (Simulation Step)
+        run: |
+          echo "Executing zero-downtime deployment to Kubernetes cluster..."
+          echo "Release deployed successfully for commit ${{ github.sha }}."

@@ -1,0 +1,30 @@
+backend:
+  replicaCount: 2
+  image:
+    repository: jatin24bcs10118/capstone-backend
+    tag: "1.0.0"
+  port: 5000
+  resources:
+    limits:
+      cpu: 300m
+      memory: 256Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
+
+frontend:
+  replicaCount: 2
+  image:
+    repository: jatin24bcs10118/capstone-frontend
+    tag: "1.0.0"
+  port: 80
+
+ingress:
+  enabled: true
+  host: capstone.local
+
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 8
+  targetCPUUtilizationPercentage: 60

@@ -1,0 +1,28 @@
+# Prometheus Alerting Rule Manifest
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: app-alert-rules
+  labels:
+    role: alert-rules
+spec:
+  groups:
+  - name: ApplicationAlerts
+    rules:
+    - alert: HighCPUUsageWarning
+      expr: sum(rate(container_cpu_usage_seconds_total{container!=""}[2m])) by (pod) > 0.8
+      for: 2m
+      labels:
+        severity: warning
+      annotations:
+        summary: "Pod {{ $labels.pod }} high CPU usage (>80%)"
+        description: "Pod is consuming excessive CPU."
+
+    - alert: PodCrashLooping
+      expr: rate(kube_pod_container_status_restarts_total[5m]) * 60 > 2
+      for: 1m
+      labels:
+        severity: critical
+      annotations:
+        summary: "Pod {{ $labels.pod }} is crash looping"
+        description: "Container restarts exceeded 2 per minute."

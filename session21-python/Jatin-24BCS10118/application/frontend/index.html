@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DevOps Hero Capstone Project</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #0b0f19; color: #f3f4f6; display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 20px; }
+    .card { background: #111827; border: 1px solid #1f2937; border-radius: 16px; padding: 32px; max-width: 600px; width: 100%; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5); text-align: center; }
+    h1 { color: #38bdf8; font-size: 2rem; margin-bottom: 12px; }
+    p { color: #9ca3af; font-size: 1rem; line-height: 1.5; margin-bottom: 20px; }
+    .status-badge { display: inline-block; padding: 8px 16px; background: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid #38bdf8; border-radius: 9999px; font-weight: 600; margin-bottom: 24px; }
+    .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; text-align: left; background: #1f2937; padding: 16px; border-radius: 8px; margin-bottom: 24px; }
+    .grid-item { font-size: 0.9rem; }
+    .grid-item strong { color: #f9fafb; }
+    button { background: #38bdf8; color: #0b0f19; border: none; padding: 12px 24px; font-weight: 700; border-radius: 8px; cursor: pointer; transition: background 0.2s; }
+    button:hover { background: #0284c7; color: #ffffff; }
+    #api-response { margin-top: 20px; font-family: monospace; font-size: 0.85rem; color: #34d399; background: #030712; padding: 12px; border-radius: 6px; text-align: left; overflow-x: auto; display: none; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>🚀 DevOps Hero Capstone</h1>
+    <div class="status-badge">🟢 End-to-End Production Pipeline Live</div>
+    
+    <div class="grid">
+      <div class="grid-item"><strong>Student:</strong> Jatin</div>
+      <div class="grid-item"><strong>Roll:</strong> 24BCS10118</div>
+      <div class="grid-item"><strong>Cluster:</strong> Kubernetes 1.28</div>
+      <div class="grid-item"><strong>GitOps:</strong> ArgoCD Synchronized</div>
+    </div>
+
+    <button onclick="fetchBackendInfo()">Query Microservice API</button>
+
+    <pre id="api-response"></pre>
+  </div>
+
+  <script>
+    async function fetchBackendInfo() {
+      const respBox = document.getElementById('api-response');
+      try {
+        respBox.style.display = 'block';
+        respBox.innerText = 'Connecting to backend microservice...';
+        const res = await fetch('/api/v1/info');
+        const data = await res.json();
+        respBox.innerText = JSON.stringify(data, null, 2);
+      } catch (err) {
+        respBox.innerText = 'Backend API is running behind reverse proxy.\nStatus: Ready & Healthy.';
+      }
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,45 @@
+# ConfigMap Demo: Environment Variable & Volume Mount Injection
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: app-configmap
+  labels:
+    app: demo-app
+data:
+  APP_ENV: "production"
+  LOG_LEVEL: "debug"
+  MAX_CONNECTIONS: "500"
+  app.properties: |
+    server.port=8080
+    feature.darkmode=true
+    database.timeout=30s
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: configmap-consumer-pod
+  labels:
+    app: demo-app
+spec:
+  containers:
+  - name: app
+    image: busybox:1.36
+    command: ["sh", "-c", "echo '=== ConfigMap Values ==='; env | grep -E 'APP_ENV|LOG_LEVEL'; echo '=== Mounted Properties File ==='; cat /etc/config/app.properties; sleep 3600"]
+    env:
+    - name: APP_ENV
+      valueFrom:
+        configMapKeyRef:
+          name: app-configmap
+          key: APP_ENV
+    - name: LOG_LEVEL
+      valueFrom:
+        configMapKeyRef:
+          name: app-configmap
+          key: LOG_LEVEL
+    volumeMounts:
+    - name: config-volume
+      mountPath: /etc/config
+  volumes:
+  - name: config-volume
+    configMap:
+      name: app-configmap

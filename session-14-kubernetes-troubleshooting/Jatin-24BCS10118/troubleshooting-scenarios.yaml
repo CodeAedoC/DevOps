@@ -1,0 +1,33 @@
+# Scenario 1: ImagePullBackOff / ErrImagePull Demo
+apiVersion: v1
+kind: Pod
+metadata:
+  name: err-image-pull-demo
+spec:
+  containers:
+  - name: test
+    image: nginx:non-existent-tag-999 # Causes ErrImagePull
+---
+# Scenario 2: CrashLoopBackOff Demo
+apiVersion: v1
+kind: Pod
+metadata:
+  name: crashloop-demo
+spec:
+  containers:
+  - name: faulty-app
+    image: busybox:1.36
+    command: ["sh", "-c", "echo 'Simulating fatal config crash...'; exit 1"]
+---
+# Scenario 3: Pending Pod (Unsatisfiable Resource Request)
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pending-demo
+spec:
+  containers:
+  - name: heavy-app
+    image: nginx:alpine
+    resources:
+      requests:
+        cpu: "100" # Exceeds node capacity -> stays in Pending phase

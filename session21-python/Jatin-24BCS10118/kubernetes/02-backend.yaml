@@ -1,0 +1,65 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend-deployment
+  namespace: devops-capstone
+  labels:
+    app: backend-api
+spec:
+  replicas: 2
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: backend-api
+  template:
+    metadata:
+      labels:
+        app: backend-api
+    spec:
+      containers:
+      - name: backend
+        image: python:3.11-slim
+        command: ["sh", "-c", "pip install flask flask-cors gunicorn && python -c 'from flask import Flask, jsonify; app = Flask(__name__); app.route(\"/api/v1/info\")(lambda: jsonify(student=\"Jatin\", enrollment=\"24BCS10118\", status=\"Healthy\")); app.route(\"/healthz\")(lambda: (\"OK\", 200)); app.run(host=\"0.0.0.0\", port=5000)'"]
+        ports:
+        - containerPort: 5000
+        envFrom:
+        - configMapRef:
+            name: app-config
+        - secretRef:
+            name: app-secret
+        resources:
+          limits:
+            cpu: "300m"
+            memory: "256Mi"
+          requests:
+            cpu: "100m"
+            memory: "128Mi"
+        readinessProbe:
+          httpGet:
+            path: /healthz
+            port: 5000
+          initialDelaySeconds: 5
+          periodSeconds: 5
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 5000
+          initialDelaySeconds: 10
+          periodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend-service
+  namespace: devops-capstone
+spec:
+  type: ClusterIP
+  selector:
+    app: backend-api
+  ports:
+  - port: 5000
+    targetPort: 5000

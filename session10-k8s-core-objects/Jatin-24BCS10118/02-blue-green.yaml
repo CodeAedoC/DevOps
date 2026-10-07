@@ -1,0 +1,65 @@
+# Blue Deployment (v1 - Current Active)
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app-blue
+  labels:
+    app: my-app
+    version: v1-blue
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: my-app
+      version: v1-blue
+  template:
+    metadata:
+      labels:
+        app: my-app
+        version: v1-blue
+    spec:
+      containers:
+      - name: web
+        image: nginx:1.24-alpine
+        ports:
+        - containerPort: 80
+---
+# Green Deployment (v2 - New Version Ready for Switch)
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app-green
+  labels:
+    app: my-app
+    version: v2-green
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: my-app
+      version: v2-green
+  template:
+    metadata:
+      labels:
+        app: my-app
+        version: v2-green
+    spec:
+      containers:
+      - name: web
+        image: nginx:1.25-alpine
+        ports:
+        - containerPort: 80
+---
+# Router Service (Points to Blue by default; switched to Green via kubectl patch)
+apiVersion: v1
+kind: Service
+metadata:
+  name: app-router-service
+spec:
+  type: ClusterIP
+  selector:
+    app: my-app
+    version: v1-blue # Change to 'v2-green' to switch traffic instantly
+  ports:
+  - port: 80
+    targetPort: 80

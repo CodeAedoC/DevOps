@@ -1,0 +1,23 @@
+# ArgoCD GitOps Application Custom Resource Definition (CRD)
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: devops-hero-gitops-app
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: 'https://github.com/Jatin-24BCS10118/devops-heros.git'
+    targetRevision: HEAD
+    path: k8s
+  destination:
+    server: 'https://kubernetes.default.svc'
+    namespace: production
+  syncPolicy:
+    automated:
+      prune: true     # Automatically deletes resources removed from Git
+      selfHeal: true  # Automatically reverts out-of-band manual drift
+    syncOptions:
+      - CreateNamespace=true

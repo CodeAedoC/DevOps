@@ -1,0 +1,92 @@
+# ==============================================================================
+# All 5 Kubernetes Service Types Demonstrated
+# ==============================================================================
+
+# Backend Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: demo-backend
+  labels:
+    app: demo-backend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: demo-backend
+  template:
+    metadata:
+      labels:
+        app: demo-backend
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.24-alpine
+        ports:
+        - containerPort: 80
+---
+# 1. ClusterIP Service (Internal cluster-only default VIP)
+apiVersion: v1
+kind: Service
+metadata:
+  name: service-clusterip
+spec:
+  type: ClusterIP
+  selector:
+    app: demo-backend
+  ports:
+  - name: http
+    port: 80
+    targetPort: 80
+---
+# 2. NodePort Service (Exposes static high port 30000-32767 on all Node IPs)
+apiVersion: v1
+kind: Service
+metadata:
+  name: service-nodeport
+spec:
+  type: NodePort
+  selector:
+    app: demo-backend
+  ports:
+  - name: http
+    port: 80
+    targetPort: 80
+    nodePort: 30180
+---
+# 3. LoadBalancer Service (Provisions external cloud LB e.g. AWS NLB/ALB)
+apiVersion: v1
+kind: Service
+metadata:
+  name: service-loadbalancer
+spec:
+  type: LoadBalancer
+  selector:
+    app: demo-backend
+  ports:
+  - name: http
+    port: 80
+    targetPort: 80
+---
+# 4. ExternalName Service (Maps internal DNS name to external CNAME without proxying)
+apiVersion: v1
+kind: Service
+metadata:
+  name: service-externalname
+spec:
+  type: ExternalName
+  externalName: api.github.com
+---
+# 5. Headless Service (clusterIP: None - returns direct Pod IPs for StatefulSets/gRPC)
+apiVersion: v1
+kind: Service
+metadata:
+  name: service-headless
+spec:
+  clusterIP: None
+  selector:
+    app: demo-backend
+  ports:
+  - name: http
+    port: 80
+    targetPort: 80
